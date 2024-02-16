@@ -4,7 +4,6 @@ on: push
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-  GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
 jobs:
   checkLicense:
@@ -48,3 +47,11 @@ jobs:
         with:
           name: Build-${{ matrix.targetPlatform }}
           path: build/${{ matrix.targetPlatform }}
+          # Upload to Drive
+      - name: Upload build to Google Drive
+        uses: Jodebu/upload-to-drive@master
+        with:
+          target: build
+          name: build-${{ matrix.targetPlatform }}
+          credentials: ${{ secrets.DRIVE_CREDENTIALS }}
+          folder: ${{ secrets.DRIVE_FOLDER }}
