@@ -1,9 +1,10 @@
-name: GameCI Template 🎮
+name: Build 🎮
 
 on: push
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
 
 jobs:
   checkLicense:
@@ -15,6 +16,7 @@ jobs:
           run: exit 1
           
   testRunner:
+    needs: checkLicense
     name: Test in ${{ matrix.testMode }} ✨
     runs-on: ubuntu-latest
     strategy:
@@ -58,7 +60,7 @@ jobs:
         with:
           testMode: ${{ matrix.testMode }}
           checkName: ${{ matrix.testMode }} test results
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ env.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v2
         with:
