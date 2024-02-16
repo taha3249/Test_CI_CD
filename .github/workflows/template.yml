@@ -1,6 +1,7 @@
 name: Build 🎮
 
-on: push
+#on: [push, workflow_dispatch]
+on: [workflow_dispatch]
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -29,13 +30,20 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+          
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d-%H-%M-%S')"
+          
       - uses: actions/cache@v3
         with:
           path: Library
           key: Library-${{ matrix.targetPlatform }}
           restore-keys: Library-
+          
       - if: matrix.targetPlatform == 'Android'
         uses: jlumbroso/free-disk-space@v1.3.1
+        
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -43,14 +51,14 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
+          
       - uses: actions/upload-artifact@v3
         with:
-          name: Build-${{ matrix.targetPlatform }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: build-${{ matrix.targetPlatform }}-${{ steps.date.outputs.date }}
           path: build/${{ matrix.targetPlatform }}
-          # Upload to Drive
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d-%H-%M-%S')"
+        
+        # Upload to Drive
       - name: Upload build to Google Drive
         uses: Jodebu/upload-to-drive@master
         with:
