@@ -14,7 +14,7 @@ jobs:
         - name: Fail - No License
           if: ${{ !startsWith(env.UNITY_LICENSE, '<') }}
           run: exit 1
-        
+          
   buildForAllSupportedPlatforms:
     needs: checkLicense
     name: Build for ${{ matrix.targetPlatform }}
@@ -26,17 +26,31 @@ jobs:
           #- iOS # Build an iOS player.
           - Android # Build an Android .apk standalone app.
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v2
+        id: lfs-cache
         with:
-          fetch-depth: 0
-          lfs: true
-      - uses: actions/cache@v3
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+          git add .
+          git reset --hard
+
+      - name: Restore Library cache
+        uses: actions/cache@v2
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}
+          key: Library-${{matrix.targetPlatform}}
           restore-keys: Library-
-      - if: matrix.targetPlatform == 'Android'
-        uses: jlumbroso/free-disk-space@v1.3.1
       - uses: game-ci/unity-builder@v4
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
