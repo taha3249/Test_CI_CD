@@ -51,18 +51,12 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
-          
-      - uses: actions/upload-artifact@v3
-        with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: build-${{ matrix.targetPlatform }}-${{ steps.date.outputs.date }}
-          path: build/${{ matrix.targetPlatform }}
         
         # Upload to Drive
       - name: Upload build to Google Drive
         uses: Jodebu/upload-to-drive@master
         with:
-          target: build
+          target: build/${{ matrix.targetPlatform }}
           name: build-${{ matrix.targetPlatform }}-${{ steps.date.outputs.date }}
           credentials: ${{ secrets.DRIVE_CREDENTIALS }}
           folder: ${{ secrets.DRIVE_FOLDER }}
